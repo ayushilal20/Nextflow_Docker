@@ -68,7 +68,7 @@ docker images
 
 ## 4️⃣ Provide Input Data
 
-The pipeline requires paired-end FASTQ files as input. Users should download their raw sequencing data (or place their own files) inside a directory, e.g., `fastq_data/`:
+The pipeline requires paired-end FASTQ files as input. Users should download their raw sequencing data (or place their own files) inside a directory, e.g., `fastq_data/` inside the Nextflow_Docker directory:
 ```bash
 mkdir fastq_data
 ```
