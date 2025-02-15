@@ -1,135 +1,139 @@
-A Nextflow-based bioinformatics pipeline for processing sequencing data, including:
+# Nextflow Assembly Pipeline
 
-Quality Control (QC) using Trimmomatic
+A Nextflow-based pipeline that includes Quality Control (Trimmomatic), Assembly (SKESA), Quality Assessment (QUAST), and Genotyping (MLST).
 
-De novo Assembly using SKESA
+## 📌 Features
 
-Assembly Quality Assessment using QUAST
+- **Automated Workflow**: Uses Nextflow to streamline QC, assembly, assessment, and genotyping.
+- **Containerized Execution**: Runs seamlessly with Docker for reproducibility.
+- **Customizable Inputs**: Accepts paired-end FASTQ files dynamically.
+- **Scalability**: Supports execution on local machines or HPC clusters.
+- **Modular Design**: Can be extended with additional bioinformatics tools.
 
-Genotyping using MLST
+---
 
-This pipeline ensures reproducibility, scalability, and modularity, making extending with additional bioinformatics tools easy.
+## 1️⃣ System Requirements
 
-📌 Features
+Before proceeding, ensure the following software is installed on the system:
 
-Automated workflow: Streamlines QC, assembly, assessment, and genotyping.
+- [Docker](https://www.docker.com/get-started) (to run the container)
+- Git (to clone the repository)
 
-Containerized execution: Runs seamlessly with Docker for reproducibility.
-
-Customizable inputs: Accepts paired-end FASTQ files dynamically.
-
-Scalability: Supports execution on local machines or HPC clusters.
-
-Modular design: Easily extendable with additional bioinformatics tools.
-
-🛠 System Requirements
-
-Before running the pipeline, ensure the following software is installed:
-
-Docker (to run the container)
-
-Git (to clone the repository)
-
-Check Installed Versions
-
+### Check Installed Versions:
+```bash
 docker --version
 git --version
+```
 
-If any of these are missing, install them accordingly:
+If any of these are missing, install them accordingly.
 
-Install Docker
-
+### Install Docker:
+```bash
 sudo apt update
 sudo apt install docker.io -y
+```
 
-Verify the installation:
-
+Check if Docker is installed:
+```bash
 docker --version
+```
 
-To avoid using sudo for Docker commands:
-
+Now, add yourself to the Docker group (so you don’t have to use `sudo` every time):
+```bash
 sudo usermod -aG docker $USER
 newgrp docker
+```
 
-🚀 Setup Instructions
+---
 
-1️⃣ Clone the Repository
-
+## 2️⃣ Clone the Repository
+```bash
 git clone git@github.com:ayushilal20/Nextflow_Docker.git
 cd Nextflow_Docker
+```
 
-2️⃣ Build the Docker Image
+---
 
+## 3️⃣ Build the Docker Image
+```bash
 docker build -t nextflow-qc-assembly .
+```
 
-Verify the image was created:
-
+To verify the image was created:
+```bash
 docker images
+```
 
-3️⃣ Provide Input Data
+---
 
-The pipeline requires paired-end FASTQ files as input. Ensure raw sequencing data is placed inside a directory, e.g., fastq_data/:
+## 4️⃣ Provide Input Data
 
+The pipeline requires paired-end FASTQ files as input. Users should download their raw sequencing data (or place their own files) inside a directory, e.g., `fastq_data/`:
+```bash
 mkdir fastq_data
+```
 
-4️⃣ Run the Pipeline with Docker
+---
 
-docker run --rm -v $(pwd):/pipeline -v $(pwd)/fastq_data:/data -w /pipeline nextflow-qc-assembly run nextflow_pipeline.nf --r1 /data/a1.fastq.gz --r2 /data/a2.fastq.gz
+## 5️⃣ Run the Pipeline with Docker
+```bash
+docker run --rm -v $(pwd):/pipeline -v $(pwd)/fastq_data:/data -w /pipeline nextflow-qc-assembly run nextflow_pipeline.nf --r1 /fastq_data/a1.fastq.gz --r2 /fastq_data/a2.fastq.gz
+```
 
-🔍 Explanation of the Docker Command
+### Explanation:
+- `docker run --rm`: Runs the container and removes it after execution.
+- `-v $(pwd):/pipeline`: Mounts the current directory inside the container.
+- `-v $(pwd)/fastq_data:/data`: Mounts the input files inside the container.
+- `-w /pipeline`: Sets the working directory inside the container.
+- `nextflow-qc-assembly`: Uses the Docker image built earlier.
+- `run nextflow_pipeline.nf`: Executes the Nextflow workflow.
+- `--r1 /fastq_data/a1.fastq.gz --r2 /fastq_data/a2.fastq.gz`: Specifies the input files.
 
-docker run --rm: Runs the container and removes it after execution.
+---
 
--v $(pwd):/pipeline: Mounts the current directory inside the container.
+## ⚡ Expected Output
 
--v $(pwd)/fastq_data:/data: Mounts the input files inside the container.
+Nextflow will create an output directory inside the container, and the results will be stored in `work/`.
 
--w /pipeline: Sets the working directory inside the container.
 
-nextflow-qc-assembly: Uses the previously built Docker image.
+**Output Files:**
+- Trimmed Reads: `r1_trimmed.fastq.gz`, `r2_trimmed.fastq.gz`
+- Assembly Output: `skesa_assembly.fna`
+- QUAST Report
+- MLST Results
 
-run nextflow_pipeline.nf: Executes the Nextflow workflow.
+---
 
---r1 /data/a1.fastq.gz: Specifies the first read file.
+## 🔹 Why Was Conda Used in the Docker Environment?
 
---r2 /data/a2.fastq.gz: Specifies the second read file.
+While setting up this pipeline, I encountered installation issues with some bioinformatics tools, particularly **MLST**. The direct installation from GitHub failed due to a broken download link, and using system-level package managers was unreliable. 
 
-📊 Expected Output
+To resolve this, we used **Conda** (via Miniconda) inside the Docker container because:
 
-Nextflow will create an output directory (work/) inside the project folder, ensuring that results persist even after the container exits.
+✅ **Bioconda Support**: Provides pre-compiled binaries for bioinformatics tools, ensuring smooth installation.
+✅ **Dependency Management**: Prevents conflicts between different software versions.
+✅ **Reproducibility**: The environment can be recreated on any machine with minimal effort.
+✅ **Simplified Installation**: Eliminates manual dependency resolution.
 
-Output Files
+### Dockerfile Base Image:
+```dockerfile
+FROM continuumio/miniconda3:latest
+```
 
-Trimmed Reads: r1_trimmed.fastq.gz, r2_trimmed.fastq.gz
+Inside the container, the following Conda command installs all required tools:
+```bash
+conda create -n nf_env -y -c bioconda -c conda-forge nextflow skesa quast mlst trimmomatic && conda clean --all -y
+```
 
-Assembly Output: skesa_assembly.fna
+This approach ensures that all tools, including MLST, are installed properly without manual intervention.
 
-QUAST Report: Inside quast_report/
+---
 
-MLST Results: mlst_results
+## 📌 TODOs & Future Improvements
 
-🏗 Why Use Conda in the Docker Environment?
+- ✅ Add support for other assemblers (e.g., SPAdes, Velvet).
+- ✅ Implement cloud storage integration (AWS S3).
 
-This pipeline uses Miniconda as the base image to manage bioinformatics dependencies efficiently.
+---
 
-Benefits of Using Conda:
 
-✅ Pre-configured Environment: Ensures consistent versions of tools across runs.✅ Reproducibility: All dependencies are installed within a dedicated Conda environment (nf_env), preventing system conflicts.✅ Bioinformatics Compatibility: The bioconda and conda-forge channels provide access to optimized versions of tools like Nextflow, SKESA, QUAST, MLST, and Trimmomatic.✅ Ease of Management: Conda simplifies dependency resolution compared to manually installing software in a raw Ubuntu-based Docker image.
-
-How Conda is Used in Docker?
-
-The Dockerfile starts from the continuumio/miniconda3 base image, which includes Conda pre-installed.
-
-A new Conda environment (nf_env) is created inside the container.
-
-All required bioinformatics tools are installed via Conda to ensure they work seamlessly together.
-
-The Nextflow entry point (ENTRYPOINT) ensures that every command is executed inside the Conda environment.
-
-📌 TODOs & Future Improvements
-
-✅ Add support for additional assemblers (e.g., SPAdes, Velvet).
-
-✅ Implement cloud storage integration (AWS S3).
-
-✅ Automate pipeline testing using GitHub Actions.
