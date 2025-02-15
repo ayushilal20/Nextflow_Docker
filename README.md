@@ -131,7 +131,8 @@ This approach ensures that all tools, including MLST, are installed properly wit
 
 ## 📌 TODOs & Future Improvements
 
-- ✅ Add support for other assemblers (e.g., SPAdes, Velvet).
+- ✅ Use mamba instead of conda
+- ✅ See other alternative ways by which the image size can be reduced
 - ✅ Implement cloud storage integration (AWS S3).
 
 ---
