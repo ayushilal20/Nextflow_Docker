@@ -108,7 +108,7 @@ Nextflow will create an output directory inside the container, and the results w
 
 While setting up this pipeline, I encountered installation issues with some bioinformatics tools, particularly **MLST**. The direct installation from GitHub failed due to a broken download link, and using system-level package managers was unreliable. 
 
-To resolve this, we used **Conda** (via Miniconda) inside the Docker container because:
+To resolve this, I used **Conda** (via Miniconda) inside the Docker container because:
 
 ✅ **Bioconda Support**: Provides pre-compiled binaries for bioinformatics tools, ensuring smooth installation.
 ✅ **Dependency Management**: Prevents conflicts between different software versions.
